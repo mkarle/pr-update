@@ -63,14 +63,14 @@ export class PrUtils {
     assignees?: string[],
     update_type?: string
   ): Promise<PullRequest> {
-    core.debug(`Updating PR "${title}" with update type "${update_type}"`)
+    core.info(`Updating PR "${title}" with update type "${update_type}"`)
     update_type = update_type?.trim() ?? undefined
     if (update_type !== 'replace' && update_type !== 'prefix') {
       update_type = 'suffix'
     }
     if (update_type !== 'replace') {
       const existing_pr = (await this.octokit.rest.pulls.get({ ...github.context.repo, pull_number: prNumber })).data
-      core.debug(`Existing PR: ${JSON.stringify(existing_pr)}`)
+      core.info(`Existing PR: ${JSON.stringify(existing_pr)}`)
       if (update_type === 'prefix') {
         title = `${title} ${existing_pr.title}`
         body = `${body} ${existing_pr.body}`
