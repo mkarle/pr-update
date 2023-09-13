@@ -3,16 +3,13 @@
 :toc: macro
 :toc-title:
 
-image:https://img.shields.io/github/workflow/status/k3rnels-actions/pr-update/build-test.svg?label=build-test[GitHub Workflow Status, link="https://github.com/k3rnels-actions/pr-update/actions/workflows/test.yml"]
-image:https://img.shields.io/codefactor/grade/github/k3rnels-actions/pr-update.svg[CodeFactor, link="https://www.codefactor.io/repository/github/k3rnels-actions/pr-update"]
-image:https://img.shields.io/maintenance/yes/2030.svg[Maintenance status, link="https://github.com/k3rnels-actions/pr-update"]
-image:https://img.shields.io/github/license/k3rnels-actions/pr-update.svg[License, link="https://github.com/k3rnels-actions/pr-update/blob/main/LICENSE"]
-image:https://img.shields.io/github/v/release/k3rnels-actions/pr-update.svg[GitHub release (latest by date), link="https://github.com/k3rnels-actions/pr-update/releases"]
+image:https://img.shields.io/github/license/mkarle/pr-update.svg[License, link="https://github.com/mkarle/pr-update/blob/main/LICENSE"]
+image:https://img.shields.io/github/v/release/mkarle/pr-update.svg[GitHub release (latest by date), link="https://github.com/mkarle/pr-update/releases"]
 
 [#introduction]
 == Introduction
 
-This is a very basic GitHub Action to simply create a GitHub Pull Request form an existing branch of the given repository to another one. This Action *_does not_* commit any of your changes, nor does it create any of the branches it uses. All this action does is create a Pull Request, nothing more.
+This is a very basic GitHub Action to simply update a GitHub Pull Request from an existing branch of the given repository to another one. This Action *_does not_* commit any of your changes, nor does it create any of the branches it uses. All this action does is update a Pull Request, nothing more.
 
 NOTE: This Action took inspiration of several other PR creating and updating Actions, however none of them seemed to be doing what I needed, so this exists now.
 
@@ -71,6 +68,10 @@ permissions:
 |`pr_assignees`
 |`false`
 |A comma separated list of assignees to add to the PR (e.g. `octocat`)
+
+|`pr_update_type`
+|`false`
+|The type of update to perform on the PR (e.g. `prefix`, `suffix`, `replace`). Defaults to `suffix`
 |===
 
 === Action Outputs
@@ -105,7 +106,7 @@ jobs:
           git checkout -b branch_name
           git commit -am 'add som stuff'
           git push origin
-      - name: Create-Update PR
+      - name: Update PR
         uses: k3rnels-actions/pr-update@v1
         id: pr_update
         with:

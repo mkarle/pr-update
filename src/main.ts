@@ -41,23 +41,11 @@ async function run(): Promise<void> {
         input.prTitle,
         body,
         input.prLabels,
-        input.prAssignees
+        input.prAssignees,
+        input.prUpdateType
       )
       core.info(`🎉 Pull Request updated: ${pull.html_url} (#${pull.number})`)
       core.setOutput('pr_nr', pull.number)
-    } else {
-      core.info('➕ Creating new PR')
-      const pull = await pr.createPr(
-        tgtBranch,
-        input.prSource,
-        input.prTitle,
-        body,
-        input.prLabels,
-        input.prAssignees
-      )
-      const prNumber = pull.number
-      core.info(`🎉 Pull Request created: ${pull.html_url} (#${prNumber})`)
-      core.setOutput('pr_nr', prNumber)
     }
     core.endGroup()
   } catch (error) {

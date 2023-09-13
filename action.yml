@@ -29,6 +29,9 @@ inputs:
   pr_assignees:
     required: false
     description: 'A comma separated list of assignees to add to the PR'
+  pr_update_type:
+    required: false
+    description: The type of update to perform on the PR (e.g. `prefix`, `suffix`, `replace`). Defaults to `suffix`
 outputs:
   pr_nr:
     description: 'The number of the created/updated PR'

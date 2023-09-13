@@ -14,6 +14,7 @@ export class Input {
   prBodyWithLinks: boolean
   prLabels: string[]
   prAssignees: string[]
+  prUpdateType: string
 
   constructor() {
     this.token = core.getInput('token', {required: true})
@@ -24,6 +25,7 @@ export class Input {
     this.prBodyWithLinks = core.getInput('pr_body_with_links') === 'true' // getBooleanInput() raises TypeError!
     this.prLabels = parsInputToArray('pr_labels')
     this.prAssignees = parsInputToArray('pr_assignees')
+    this.prUpdateType = core.getInput('pr_update_type')
 
     core.setSecret(this.token)
   }

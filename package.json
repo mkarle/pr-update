@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/k3rnels-actions/pr-update.git"
+    "url": "git+https://github.commkarle/pr-update.git"
   },
   "keywords": [
     "actions",
