@@ -72,16 +72,9 @@ function run() {
                 : input.prBody || undefined;
             if (pullRequestNr) {
                 core.info('♻️ Update existing PR');
-                const pull = yield pr.updatePr(pullRequestNr, input.prTitle, body, input.prLabels, input.prAssignees);
+                const pull = yield pr.updatePr(pullRequestNr, input.prTitle, body, input.prLabels, input.prAssignees, input.prUpdateType);
                 core.info(`🎉 Pull Request updated: ${pull.html_url} (#${pull.number})`);
                 core.setOutput('pr_nr', pull.number);
-            }
-            else {
-                core.info('➕ Creating new PR');
-                const pull = yield pr.createPr(tgtBranch, input.prSource, input.prTitle, body, input.prLabels, input.prAssignees);
-                const prNumber = pull.number;
-                core.info(`🎉 Pull Request created: ${pull.html_url} (#${prNumber})`);
-                core.setOutput('pr_nr', prNumber);
             }
             core.endGroup();
         }
@@ -142,6 +135,7 @@ class Input {
         this.prBodyWithLinks = core.getInput('pr_body_with_links') === 'true'; // getBooleanInput() raises TypeError!
         this.prLabels = parsInputToArray('pr_labels');
         this.prAssignees = parsInputToArray('pr_assignees');
+        this.prUpdateType = core.getInput('pr_update_type');
         core.setSecret(this.token);
     }
 }
@@ -376,9 +370,26 @@ class PrUtils {
             return pr;
         });
     }
-    updatePr(prNumber, title, body, labels, assignees) {
+    updatePr(prNumber, title, body, labels, assignees, update_type) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            core.debug(`Updating PR "${title}"`);
+            core.info(`Updating PR "${title}" with update type "${update_type}"`);
+            update_type = (_a = update_type === null || update_type === void 0 ? void 0 : update_type.trim()) !== null && _a !== void 0 ? _a : undefined;
+            if (update_type !== 'replace' && update_type !== 'prefix') {
+                update_type = 'suffix';
+            }
+            if (update_type !== 'replace') {
+                const existing_pr = (yield this.octokit.rest.pulls.get(Object.assign(Object.assign({}, github.context.repo), { pull_number: prNumber }))).data;
+                core.info(`Existing PR: ${JSON.stringify(existing_pr)}`);
+                if (update_type === 'prefix') {
+                    title = `${title} ${existing_pr.title}`;
+                    body = `${body} ${existing_pr.body}`;
+                }
+                else {
+                    title = `${existing_pr.title} ${title}`;
+                    body = `${existing_pr.body} ${body}`;
+                }
+            }
             const pr = (yield this.octokit.rest.pulls.update(Object.assign(Object.assign({}, github.context.repo), { pull_number: prNumber, title,
                 body }))).data;
             if (labels && labels.length > 0) {
