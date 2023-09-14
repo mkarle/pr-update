@@ -373,21 +373,20 @@ class PrUtils {
     updatePr(prNumber, title, body, labels, assignees, update_type) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            core.info(`Updating PR "${title}" with update type "${update_type}"`);
+            core.debug(`Updating PR "${title}" with update type "${update_type}"`);
             update_type = (_a = update_type === null || update_type === void 0 ? void 0 : update_type.trim()) !== null && _a !== void 0 ? _a : undefined;
             if (update_type !== 'replace' && update_type !== 'prefix') {
                 update_type = 'suffix';
             }
             if (update_type !== 'replace') {
                 const existing_pr = (yield this.octokit.rest.pulls.get(Object.assign(Object.assign({}, github.context.repo), { pull_number: prNumber }))).data;
-                core.info(`Existing PR: ${JSON.stringify(existing_pr)}`);
                 if (update_type === 'prefix') {
                     title = `${title} ${existing_pr.title}`;
-                    body = `${body} ${existing_pr.body}`;
+                    body = `${body}\n${existing_pr.body}`;
                 }
                 else {
                     title = `${existing_pr.title} ${title}`;
-                    body = `${existing_pr.body} ${body}`;
+                    body = `${existing_pr.body}\n${body}`;
                 }
             }
             const pr = (yield this.octokit.rest.pulls.update(Object.assign(Object.assign({}, github.context.repo), { pull_number: prNumber, title,

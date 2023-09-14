@@ -72,10 +72,10 @@ export class PrUtils {
       const existing_pr = (await this.octokit.rest.pulls.get({ ...github.context.repo, pull_number: prNumber })).data
       if (update_type === 'prefix') {
         title = `${title} ${existing_pr.title}`
-        body = `${body} ${existing_pr.body}`
+        body = `${body}\n${existing_pr.body}`
       } else {
         title = `${existing_pr.title} ${title}`
-        body = `${existing_pr.body} ${body}`
+        body = `${existing_pr.body}\n${body}`
       }
     }
     const pr = (
