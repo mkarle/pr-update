@@ -15,6 +15,7 @@ export class Input {
   prLabels: string[]
   prAssignees: string[]
   prUpdateType: string
+  prNumber: string
 
   constructor() {
     this.token = core.getInput('token', {required: true})
@@ -26,6 +27,7 @@ export class Input {
     this.prLabels = parsInputToArray('pr_labels')
     this.prAssignees = parsInputToArray('pr_assignees')
     this.prUpdateType = core.getInput('pr_update_type')
+    this.prNumber = core.getInput('pr_number')
 
     core.setSecret(this.token)
   }

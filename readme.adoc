@@ -53,6 +53,10 @@ permissions:
 |`false`
 |The target branch name the PR should have (defaults to the default branch of the repo)
 
+|`pr_number`
+|`true`
+|The pull request number used to fetch the PR to update
+
 |`pr_body`
 |`false`
 |The body of the PR to create (e.g. `My very useful PR description`)

@@ -44,7 +44,6 @@ const github = __importStar(__nccwpck_require__(5438));
 const input_1 = __nccwpck_require__(1933);
 const prUtils_1 = __nccwpck_require__(6016);
 const bodyUtils_1 = __nccwpck_require__(553);
-const git = __importStar(__nccwpck_require__(7919));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -52,27 +51,13 @@ function run() {
             const octokit = github.getOctokit(input.token);
             const pr = new prUtils_1.PrUtils(octokit);
             const bodyUtils = new bodyUtils_1.BodyUtils(octokit);
-            const tgtBranch = yield git.getTargetBranch(input.prTarget, octokit);
-            core.startGroup('Checks');
-            core.info('🔍 Checking if branches exists');
-            const srcBranchExists = yield git.branchExists(octokit, input.prSource);
-            if (!srcBranchExists) {
-                core.setFailed(`💥 Source branch '${input.prSource}' does not exist!`);
-            }
-            const tgtBranchExists = yield git.branchExists(octokit, tgtBranch);
-            if (!tgtBranchExists) {
-                core.setFailed(`💥 Target branch '${tgtBranch}' does not exist!`);
-            }
-            core.info('🔍 Checking if there is a open PR for the source to target branch');
-            const pullRequestNr = yield pr.getPrNumber(tgtBranch, input.prSource);
-            core.endGroup();
             core.startGroup('PR');
             const body = input.prBodyWithLinks === true
                 ? yield bodyUtils.withLinks(input.prSource, input.prTarget, input.prBody)
                 : input.prBody || undefined;
-            if (pullRequestNr) {
-                core.info('♻️ Update existing PR');
-                const pull = yield pr.updatePr(pullRequestNr, input.prTitle, body, input.prLabels, input.prAssignees, input.prUpdateType);
+            if (input.prNumber) {
+                core.info('♻️ Update PR');
+                const pull = yield pr.updatePr(Number(input.prNumber), input.prTitle, body, input.prLabels, input.prAssignees, input.prUpdateType);
                 core.info(`🎉 Pull Request updated: ${pull.html_url} (#${pull.number})`);
                 core.setOutput('pr_nr', pull.number);
             }
@@ -136,6 +121,7 @@ class Input {
         this.prLabels = parsInputToArray('pr_labels');
         this.prAssignees = parsInputToArray('pr_assignees');
         this.prUpdateType = core.getInput('pr_update_type');
+        this.prNumber = core.getInput('pr_number');
         core.setSecret(this.token);
     }
 }
@@ -226,79 +212,6 @@ class BodyUtils {
     }
 }
 exports.BodyUtils = BodyUtils;
-
-
-/***/ }),
-
-/***/ 7919:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getTargetBranch = exports.branchExists = void 0;
-const github = __importStar(__nccwpck_require__(5438));
-function branchExists(octokit, branchName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const status = (yield octokit.rest.git.getRef(Object.assign(Object.assign({}, github.context.repo), { ref: `heads/${branchName}` }))).status;
-            return status === 200;
-        }
-        catch (_a) {
-            return false;
-        }
-    });
-}
-exports.branchExists = branchExists;
-function getTargetBranch(inputBranch, octokit) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (inputBranch) {
-            return inputBranch;
-        }
-        else {
-            return getDefaultBranch(octokit);
-        }
-    });
-}
-exports.getTargetBranch = getTargetBranch;
-function getDefaultBranch(octokit) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const repo = (yield octokit.rest.repos.get(Object.assign({}, github.context.repo))).data;
-        return repo.default_branch;
-    });
-}
 
 
 /***/ }),
