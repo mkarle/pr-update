@@ -45,14 +45,6 @@ permissions:
 |`true`
 |The title of the PR that should be created/updated (e.g. `My awesome PR`)
 
-|`pr_source`
-|`true`
-|The source branch name the PR should have (this branch needs to already exist in the repository)
-
-|`pr_target`
-|`false`
-|The target branch name the PR should have (defaults to the default branch of the repo)
-
 |`pr_number`
 |`true`
 |The pull request number used to fetch the PR to update
@@ -116,7 +108,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pr_title: Awsome PR
-          pr_source: branch_name
+          pr_number: ${{ github.event.pull_request.number }}
           pr_body: |
             ### Description
             Yes you can use Markdown here too

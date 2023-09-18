@@ -7,27 +7,23 @@ function parsInputToArray(input: string, options?: core.InputOptions): string[] 
 
 export class Input {
   token: string
+  prNumber: string
   prTitle: string
-  prSource: string
-  prTarget: string
   prBody: string
   prBodyWithLinks: boolean
   prLabels: string[]
   prAssignees: string[]
   prUpdateType: string
-  prNumber: string
 
   constructor() {
     this.token = core.getInput('token', {required: true})
-    this.prTitle = core.getInput('pr_title', {required: true})
-    this.prSource = core.getInput('pr_source', {required: true})
-    this.prTarget = core.getInput('pr_target')
+    this.prNumber = core.getInput('pr_number', {required: true})
+    this.prTitle = core.getInput('pr_title')
     this.prBody = core.getInput('pr_body')
     this.prBodyWithLinks = core.getInput('pr_body_with_links') === 'true' // getBooleanInput() raises TypeError!
     this.prLabels = parsInputToArray('pr_labels')
     this.prAssignees = parsInputToArray('pr_assignees')
     this.prUpdateType = core.getInput('pr_update_type')
-    this.prNumber = core.getInput('pr_number')
 
     core.setSecret(this.token)
   }
