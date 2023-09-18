@@ -43,21 +43,16 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const input_1 = __nccwpck_require__(1933);
 const prUtils_1 = __nccwpck_require__(6016);
-const bodyUtils_1 = __nccwpck_require__(553);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const input = new input_1.Input();
             const octokit = github.getOctokit(input.token);
             const pr = new prUtils_1.PrUtils(octokit);
-            const bodyUtils = new bodyUtils_1.BodyUtils(octokit);
             core.startGroup('PR');
-            const body = input.prBodyWithLinks === true
-                ? yield bodyUtils.withLinks(input.prSource, input.prTarget, input.prBody)
-                : input.prBody || undefined;
             if (input.prNumber) {
                 core.info('♻️ Update PR');
-                const pull = yield pr.updatePr(Number(input.prNumber), input.prTitle, body, input.prLabels, input.prAssignees, input.prUpdateType);
+                const pull = yield pr.updatePr(Number(input.prNumber), input.prTitle, input.prBody, input.prLabels, input.prAssignees, input.prUpdateType);
                 core.info(`🎉 Pull Request updated: ${pull.html_url} (#${pull.number})`);
                 core.setOutput('pr_nr', pull.number);
             }
@@ -113,105 +108,17 @@ function parsInputToArray(input, options) {
 class Input {
     constructor() {
         this.token = core.getInput('token', { required: true });
-        this.prTitle = core.getInput('pr_title', { required: true });
-        this.prSource = core.getInput('pr_source', { required: true });
-        this.prTarget = core.getInput('pr_target');
+        this.prNumber = core.getInput('pr_number', { required: true });
+        this.prTitle = core.getInput('pr_title');
         this.prBody = core.getInput('pr_body');
         this.prBodyWithLinks = core.getInput('pr_body_with_links') === 'true'; // getBooleanInput() raises TypeError!
         this.prLabels = parsInputToArray('pr_labels');
         this.prAssignees = parsInputToArray('pr_assignees');
         this.prUpdateType = core.getInput('pr_update_type');
-        this.prNumber = core.getInput('pr_number');
         core.setSecret(this.token);
     }
 }
 exports.Input = Input;
-
-
-/***/ }),
-
-/***/ 553:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BodyUtils = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
-class BodyUtils {
-    constructor(octokit) {
-        this.octokit = octokit;
-    }
-    withLinks(prSource, prTarget, body) {
-        return __awaiter(this, void 0, void 0, function* () {
-            core.info(`Start retrieving PR links for all diffs between head ${prSource} and base ${prTarget}`);
-            let bodyWithLinks = body !== null && body !== void 0 ? body : '';
-            const commitShas = yield this.fetchCommitShas(prSource, prTarget);
-            const titleLinkHash = yield this.fetchTitleAndLinks(commitShas);
-            for (const [title, link] of titleLinkHash) {
-                bodyWithLinks += `\n\r- [${title}](${link})`;
-            }
-            return bodyWithLinks;
-        });
-    }
-    fetchCommitShas(prSource, prTarget) {
-        return __awaiter(this, void 0, void 0, function* () {
-            core.debug(`Fetching all associated commits of ${prSource} and ${prTarget}`);
-            const resp = yield this.octokit.rest.repos.compareCommits(Object.assign(Object.assign({}, github.context.repo), { head: prSource, base: prTarget }));
-            return resp.data.commits.map((entry) => entry.sha);
-        });
-    }
-    fetchTitleAndLinks(commitShas) {
-        return __awaiter(this, void 0, void 0, function* () {
-            core.debug(`Fetching associated pull request's title and links of commit shas: ${commitShas.toString()}`);
-            const titleWithLinks = new Map();
-            for (const commitSha of commitShas) {
-                const resp = yield this.octokit.rest.repos.listPullRequestsAssociatedWithCommit(Object.assign(Object.assign({}, github.context.repo), { commit_sha: commitSha }));
-                for (const entry of resp.data) {
-                    if (entry.state === 'open') {
-                        continue;
-                    }
-                    titleWithLinks.set(entry.title, entry.html_url);
-                }
-            }
-            return titleWithLinks;
-        });
-    }
-}
-exports.BodyUtils = BodyUtils;
 
 
 /***/ }),
